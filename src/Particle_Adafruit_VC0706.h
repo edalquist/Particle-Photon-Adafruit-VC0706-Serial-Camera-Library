@@ -16,8 +16,10 @@
 
 #include <Arduino.h>
 
-#if defined(__AVR__) || defined(ESP8266)
-#include <SoftwareSerial.h>
+#if defined(PARTICLE)
+  #include <ParticleSoftSerial.h>
+#elif defined(__AVR__) || defined(ESP8266)
+  #include <SoftwareSerial.h>
 #endif
 
 #define VC0706_RESET 0x26
@@ -64,7 +66,9 @@
 /**************************************************************************/
 class Adafruit_VC0706 {
 public:
-#if defined(__AVR__) || defined(ESP8266)
+#if defined(PARTICLE)
+  Adafruit_VC0706(ParticleSoftSerial *ser); // Constructor when using ParticleSoftSerial
+#elif defined(__AVR__) || defined(ESP8266)
   Adafruit_VC0706(SoftwareSerial *ser); // Constructor when using SoftwareSerial
 #endif
   Adafruit_VC0706(HardwareSerial *ser); // Constructor when using HardwareSerial
@@ -109,7 +113,9 @@ private:
   uint8_t bufferLen;
   uint16_t frameptr;
 
-#if defined(__AVR__) || defined(ESP8266)
+#if defined(PARTICLE)
+  ParticleSoftSerial *swSerial;
+#elif defined(__AVR__) || defined(ESP8266)
   SoftwareSerial *swSerial;
 #endif
   HardwareSerial *hwSerial;

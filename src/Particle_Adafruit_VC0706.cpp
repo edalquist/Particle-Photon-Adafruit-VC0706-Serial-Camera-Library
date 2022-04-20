@@ -14,11 +14,11 @@
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 
-#include "Adafruit_VC0706.h"
+#include "Particle_Adafruit_VC0706.h"
 
 // Initialization code used by all constructor types
 void Adafruit_VC0706::common_init(void) {
-#if defined(__AVR__) || defined(ESP8266)
+#if defined(PARTICLE) || defined(__AVR__) || defined(ESP8266)
   swSerial = NULL;
 #endif
   hwSerial = NULL;
@@ -27,14 +27,18 @@ void Adafruit_VC0706::common_init(void) {
   serialNum = 0;
 }
 
-#if defined(__AVR__) || defined(ESP8266)
+#if defined(PARTICLE) || defined(__AVR__) || defined(ESP8266)
 /**************************************************************************/
 /*!
     @brief Constructor when using SoftwareSerial
     @param ser Software serial connection
 */
 /**************************************************************************/
+#if defined(PARTICLE)
+Adafruit_VC0706::Adafruit_VC0706(ParticleSoftSerial *ser) {
+#else
 Adafruit_VC0706::Adafruit_VC0706(SoftwareSerial *ser) {
+#endif
   common_init();  // Set everything to common state, then...
   swSerial = ser; // ...override swSerial with value passed.
 }
@@ -59,7 +63,7 @@ Adafruit_VC0706::Adafruit_VC0706(HardwareSerial *ser) {
 */
 /**************************************************************************/
 boolean Adafruit_VC0706::begin(uint32_t baud) {
-#if defined(__AVR__) || defined(ESP8266)
+#if defined(PARTICLE) || defined(__AVR__) || defined(ESP8266)
   if (swSerial)
     swSerial->begin(baud);
   else
@@ -581,7 +585,7 @@ boolean Adafruit_VC0706::runCommand(uint8_t cmd, uint8_t *args, uint8_t argn,
 
 void Adafruit_VC0706::sendCommand(uint8_t cmd, uint8_t args[] = 0,
                                   uint8_t argn = 0) {
-#if defined(__AVR__) || defined(ESP8266)
+#if defined(PARTICLE) || defined(__AVR__) || defined(ESP8266)
   if (swSerial) {
 
     swSerial->write((byte)0x56);
@@ -615,7 +619,7 @@ uint8_t Adafruit_VC0706::readResponse(uint8_t numbytes, uint8_t timeout) {
   int avail;
 
   while ((timeout != counter) && (bufferLen != numbytes)) {
-#if defined(__AVR__) || defined(ESP8266)
+#if defined(PARTICLE) || defined(__AVR__) || defined(ESP8266)
     avail = swSerial ? swSerial->available() : hwSerial->available();
 #else
     avail = hwSerial->available();
@@ -627,7 +631,7 @@ uint8_t Adafruit_VC0706::readResponse(uint8_t numbytes, uint8_t timeout) {
     }
     counter = 0;
     // there's a byte!
-#if defined(__AVR__) || defined(ESP8266)
+#if defined(PARTICLE) || defined(__AVR__) || defined(ESP8266)
     camerabuff[bufferLen++] = swSerial ? swSerial->read() : hwSerial->read();
 #else
     camerabuff[bufferLen++] = hwSerial->read();
