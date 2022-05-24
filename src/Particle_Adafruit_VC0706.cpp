@@ -242,9 +242,9 @@ char *Adafruit_VC0706::getVersion(void) {
 */
 /**************************************************************************/
 char *Adafruit_VC0706::setBaud9600() {
-  uint8_t args[] = {0x03, 0x01, 0xAE, 0xC8};
+  uint8_t args[] = {0x06, 0x04, 0x02, 0x00, 0x08, 0xAE, 0xC8};
 
-  sendCommand(VC0706_SET_PORT, args, sizeof(args));
+  sendCommand(VC0706_WRITE_DATA, args, sizeof(args));
   // get reply
   if (!readResponse(CAMERABUFFSIZ, 200))
     return 0;
@@ -259,9 +259,9 @@ char *Adafruit_VC0706::setBaud9600() {
 */
 /**************************************************************************/
 char *Adafruit_VC0706::setBaud19200() {
-  uint8_t args[] = {0x03, 0x01, 0x56, 0xE4};
+  uint8_t args[] = {0x06, 0x04, 0x02, 0x00, 0x08, 0x56, 0xE4};
 
-  sendCommand(VC0706_SET_PORT, args, sizeof(args));
+  sendCommand(VC0706_WRITE_DATA, args, sizeof(args));
   // get reply
   if (!readResponse(CAMERABUFFSIZ, 200))
     return 0;
@@ -276,9 +276,9 @@ char *Adafruit_VC0706::setBaud19200() {
 */
 /**************************************************************************/
 char *Adafruit_VC0706::setBaud38400() {
-  uint8_t args[] = {0x03, 0x01, 0x2A, 0xF2};
+  uint8_t args[] = {0x06, 0x04, 0x02, 0x00, 0x08, 0x2A, 0xF2};
 
-  sendCommand(VC0706_SET_PORT, args, sizeof(args));
+  sendCommand(VC0706_WRITE_DATA, args, sizeof(args));
   // get reply
   if (!readResponse(CAMERABUFFSIZ, 200))
     return 0;
@@ -293,9 +293,9 @@ char *Adafruit_VC0706::setBaud38400() {
 */
 /**************************************************************************/
 char *Adafruit_VC0706::setBaud57600() {
-  uint8_t args[] = {0x03, 0x01, 0x1C, 0x1C};
+  uint8_t args[] = {0x06, 0x04, 0x02, 0x00, 0x08, 0x1C, 0x4C};
 
-  sendCommand(VC0706_SET_PORT, args, sizeof(args));
+  sendCommand(VC0706_WRITE_DATA, args, sizeof(args));
   // get reply
   if (!readResponse(CAMERABUFFSIZ, 200))
     return 0;
@@ -310,9 +310,9 @@ char *Adafruit_VC0706::setBaud57600() {
 */
 /**************************************************************************/
 char *Adafruit_VC0706::setBaud115200() {
-  uint8_t args[] = {0x03, 0x01, 0x0D, 0xA6};
+  uint8_t args[] = {0x06, 0x04, 0x02, 0x00, 0x08, 0x0D, 0xA6};
 
-  sendCommand(VC0706_SET_PORT, args, sizeof(args));
+  sendCommand(VC0706_WRITE_DATA, args, sizeof(args));
   // get reply
   if (!readResponse(CAMERABUFFSIZ, 200))
     return 0;
@@ -576,8 +576,9 @@ boolean Adafruit_VC0706::runCommand(uint8_t cmd, uint8_t *args, uint8_t argn,
   }
 
   sendCommand(cmd, args, argn);
-  if (readResponse(resplen, 200) != resplen)
+  if (readResponse(resplen, 200) != resplen) {
     return false;
+  }
   if (!verifyResponse(cmd))
     return false;
   return true;
@@ -585,6 +586,14 @@ boolean Adafruit_VC0706::runCommand(uint8_t cmd, uint8_t *args, uint8_t argn,
 
 void Adafruit_VC0706::sendCommand(uint8_t cmd, uint8_t args[] = 0,
                                   uint8_t argn = 0) {
+// Serial.println("--- SEND ---");
+// Serial.print(" 0x");
+// Serial.print(0x56, HEX);
+// Serial.print(" 0x");
+// Serial.print(serialNum, HEX);
+// Serial.print(" 0x");
+// Serial.print(cmd, HEX);
+
 #if defined(PARTICLE) || defined(__AVR__) || defined(ESP8266)
   if (swSerial) {
 
@@ -611,9 +620,11 @@ void Adafruit_VC0706::sendCommand(uint8_t cmd, uint8_t args[] = 0,
     }
   }
   // Serial.println();
+  // Serial.println((char*)args);
 }
 
 uint8_t Adafruit_VC0706::readResponse(uint8_t numbytes, uint8_t timeout) {
+// Serial.println("--- READ ---");
   uint8_t counter = 0;
   bufferLen = 0;
   int avail;
@@ -640,13 +651,15 @@ uint8_t Adafruit_VC0706::readResponse(uint8_t numbytes, uint8_t timeout) {
   // printBuff();
   // camerabuff[bufferLen] = 0;
   // Serial.println((char*)camerabuff);
+  // Log.info("readResponse(%d, %d) = %d bytes in %d ms", numbytes, timeout, bufferLen, counter);
   return bufferLen;
 }
 
 boolean Adafruit_VC0706::verifyResponse(uint8_t command) {
   if ((camerabuff[0] != 0x76) || (camerabuff[1] != serialNum) ||
-      (camerabuff[2] != command) || (camerabuff[3] != 0x0))
+      (camerabuff[2] != command) || (camerabuff[3] != 0x0)) {
     return false;
+  }
   return true;
 }
 
